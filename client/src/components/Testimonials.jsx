@@ -99,10 +99,11 @@ export default function Testimonials() {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="flex-shrink-0 w-[350px] mx-4"
     >
-      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+      <div className="bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg
+                  border rounded-2xl p-4 border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
         {/* Quote Icon */}
-        <div className="absolute -top-3 -left-3">
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${typeColors[testimonial.type]} flex items-center justify-center shadow-lg`}>
+        <div className="absolute -top-2 -left-3">
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${typeColors[testimonial.type]} flex items-center justify-center shadow-lg`}>
             <Quote className="w-5 h-5 text-white" />
           </div>
         </div>

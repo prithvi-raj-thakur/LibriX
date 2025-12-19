@@ -1,7 +1,9 @@
-import { useState } from "react";
+
 import  MorphingNavigation  from "../components/lightswind/morphing-navigation";
 import  HamburgerMenuOverlay  from "../components/lightswind/hamburger-menu-overlay";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+
 import {
   Home,
   ShoppingBag,
@@ -13,7 +15,17 @@ import {
 import logo from "../assets/logo.png";
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 5);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
+  
 
   const links = [
     { id: "home", label: "Home", href: "#home", icon: <Home size={16} /> },
@@ -64,30 +76,46 @@ export default function Navbar() {
             theme="custom"
             backgroundColor="transparent"
             borderColor="transparent"
-            textColor="#ffffff"
+            textColor={scrolled ? "#000000" : "#ffffff"}
             animationDuration={1.1}
             enablePageBlur={false}
           />
         </div>
 
+
         {/* RIGHT — LOGIN / CTA */}
         <div className="flex items-center gap-4 h-10">
-         <Link
-            to="/login"
-            className="flex items-center gap-2 rounded-xl border border-white/40 px-4 py-2 text-sm text-white self-center"
-          >
-            <LogIn size={16} />
-            Login
-          </Link>
+  {/* LOGIN */}
+  <Link
+    to="/login"
+    className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm self-center transition-all duration-300
+      ${
+        scrolled
+          ? "bg-gradient-to-r from-yellow-100 to-green-300 text-black border border-transparent"
+          : "border border-white/40 text-white"
+      }
+    `}
+  >
+    <LogIn size={16} />
+    Login
+  </Link>
 
-          <Link
-  to="/register"
-  className="hidden md:flex items-center gap-2 rounded-xl bg-white px-5 py-2 text-sm text-black"
->
-  Get Started
-  <ArrowRight size={16} />
-</Link>
+  {/* GET STARTED */}
+  <Link
+    to="/register"
+    className={`hidden md:flex items-center gap-2 rounded-xl px-5 py-2 text-sm transition-all duration-300
+      ${
+        scrolled
+          ? "bg-gradient-to-r from-yellow-400 to-green-600 text-black"
+          : "bg-white text-black"
+      }
+    `}
+  >
+    Get Started
+    <ArrowRight size={16} />
+  </Link>
         </div>
+
 
       </div>
     </nav>
