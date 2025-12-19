@@ -1,64 +1,87 @@
-import  {ScrollTimeline}  from "../components/lightswind/scroll-timeline"
 import {
   UserPlus,
   Search,
   ShoppingCart,
-  MapPin
+  MapPin,
+  ArrowRight
 } from "lucide-react"
 
-const events = [
+const steps = [
   {
-    year: "Step 01",
+    number: "01",
     title: "Register on LibriX",
-    subtitle: "Create your reader identity",
-    description:
-      "Sign up in seconds to become part of the LibriX reading community.",
+    description: "Create your reader identity in seconds.",
     icon: UserPlus,
   },
   {
-    year: "Step 02",
+    number: "02",
     title: "Browse or Request",
-    subtitle: "Discover books nearby",
-    description:
-      "Explore available books or request a title you’re looking for.",
+    description: "Find books nearby or request what you need.",
     icon: Search,
   },
   {
-    year: "Step 03",
+    number: "03",
     title: "Rent, Buy or Bid",
-    subtitle: "Choose your way",
-    description:
-      "Rent affordably, buy permanently, or bid on popular books.",
+    description: "Choose how you want the book.",
     icon: ShoppingCart,
   },
   {
-    year: "Step 04",
+    number: "04",
     title: "Pick Up Nearby",
-    subtitle: "Fast & local",
-    description:
-      "Pick up books from nearby readers or hubs.",
+    description: "Fast pickup from local readers or hubs.",
     icon: MapPin,
   },
 ]
 
-export default function Timeline() {
+export default function HowItWorksHorizontal() {
   return (
-    <section className="bg-white text-black py-20">
-      <div className="max-w-3xl mx-auto text-center mb-16">
-        <h2 className="text-4xl font-bold mb-4">
-          How <span className="text-yellow-500">LibriX</span> Works
+    <section className="bg-gradient-to-br from-yellow-100 via-white to-green-100 py-24">
+      {/* Heading */}
+      <div className="max-w-4xl mx-auto text-center mb-16">
+        <h2 className="text-6xl font-bold mb-4 text-slate-900">
+          How{" "}
+          <span className="bg-gradient-to-r from-yellow-500 to-green-600 bg-clip-text text-transparent">
+            LibriX
+          </span>{" "}
+          Works
         </h2>
-        <p className="text-black/70">
-          Bringing readers together through local discovery.
+        <p className="text-slate-600">
+          A simple, local-first way to discover books.
         </p>
       </div>
 
-      <ScrollTimeline
-        events={events}
-        progressIndicator
-        cardAlignment="alternating"
-        revealAnimation="fade"
-      />
+      {/* Steps */}
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6 px-6">
+  {steps.map((step, index) => (
+    <div key={step.number} className="flex items-center">
+      
+      {/* Step Card */}
+      <div className="flex flex-col items-center text-center bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/40 rounded-2xl px-6 py-8 w-64 shadow-md">
+        <div className="text-sm font-semibold text-green-700 mb-2">
+          STEP {step.number}
+        </div>
+
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-green-600 flex items-center justify-center mb-4">
+          <step.icon className="w-6 h-6 text-black" />
+        </div>
+
+        <h3 className="font-semibold text-slate-900 mb-2">
+          {step.title}
+        </h3>
+
+        <p className="text-sm text-slate-600">
+          {step.description}
+        </p>
+      </div>
+
+      {/* Arrow */}
+      {index !== steps.length - 1 && (
+        <ArrowRight className="hidden md:block mx-4 text-green-600 w-6 h-6 flex-shrink-0" />
+      )}
+    </div>
+  ))}
+</div>
+
     </section>
   )
 }

@@ -95,7 +95,7 @@ const Hero = () => {
             brightnessLevel={0.6}
             activeWidth={35}
             enableKeyboardNavigation={true}
-            autoPlay={false}                // disable auto rotation
+            autoPlay={true}                // disable auto rotation
             onImageClick={(index, image) => handleImageClick(index, image)}
             onImageHover={(index, image) => handleImageHover(index, image)}
             />
