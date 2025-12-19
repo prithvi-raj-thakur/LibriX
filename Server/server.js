@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/db.js';
+import sellerAuthRouter from './seller/routes/sellerAuth.route.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +11,9 @@ await connectDB();
 //Middleware
 app.use(cors());
 app.use(express.json());
+//Routes
+app.use("/api/seller", sellerAuthRouter);
+
 
 app.get('/', (req, res) => {
   res.send('Welcome to the LibriX Server!');
