@@ -1,4 +1,4 @@
-import { ScrollTimeline } from "../components/lightswind/scroll-timeline"
+import  {ScrollTimeline}  from "../components/lightswind/scroll-timeline"
 import {
   UserPlus,
   Search,
