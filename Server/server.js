@@ -4,6 +4,7 @@ import 'dotenv/config';
 import connectDB from './configs/db.js';
 import sellerAuthRouter from './seller/routes/sellerAuth.route.js';
 import buyerAuthRouter from './customer/routes/buyerAuth.route.js';
+import lenderAuthRoutes from './lender/routes/lenderAuth.route.js'
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(express.json());
 //Routes
 app.use("/api/seller", sellerAuthRouter);
 app.use("/api/buyer", buyerAuthRouter);
+app.use("/api/lender", lenderAuthRoutes);
 
 
 app.get('/', (req, res) => {

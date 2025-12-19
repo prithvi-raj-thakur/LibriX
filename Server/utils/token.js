@@ -31,3 +31,19 @@ export const generateBuyerRefreshToken = (id) => {
     { expiresIn: process.env.BUYER_REFRESH_TOKEN_EXPIRE }
   );
 };
+
+export const generateLenderAccessToken = (id) => {
+  return jwt.sign(
+    { id, role: "lender" },
+    process.env.LENDER_ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.LENDER_ACCESS_TOKEN_EXPIRE }
+  );
+};
+
+export const generateLenderRefreshToken = (id) => {
+  return jwt.sign(
+    { id, role: "lender" },
+    process.env.LENDER_REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.LENDER_REFRESH_TOKEN_EXPIRE }
+  );
+};
