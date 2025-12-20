@@ -5,6 +5,7 @@ const pageRoutes = {
   Register:'/register',
   Login: '/login',
   SellerDashboard: '/seller/dashboard',
+  SellerUploads:'/seller/uploads'
   
 };
 
