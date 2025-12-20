@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import Testimonials from '@/components/Testimonials'
 import AboutSection from '@/components/AboutSection'
 
+
 const landing = () => {
   return (
     <>
@@ -22,3 +23,5 @@ const landing = () => {
 }
 
 export default landing
+
+

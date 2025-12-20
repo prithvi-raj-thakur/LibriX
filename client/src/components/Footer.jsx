@@ -1,226 +1,342 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Home, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import React from "react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
-export default function Footer() {
-  const footerLinks = {
-    company: [
-      { label: "About Us", href: "#" },
-      { label: "Our Team", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" }
-    ],
-    services: [
-      { label: "Buy Property", href: "#" },
-      { label: "Sell Property", href: "#" },
-      { label: "Property Financing", href: "#" },
-      { label: "Property Management", href: "#" }
-    ],
-    resources: [
-      { label: "Blog", href: "#" },
-      { label: "FAQs", href: "#" },
-      { label: "Market Insights", href: "#" },
-      { label: "Property Guides", href: "#" }
-    ],
-    legal: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
-      { label: "Legal Notice", href: "#" }
-    ]
+const Footer = () => {
+  const footerRef = useRef(null);
+  const isInView = useInView(footerRef, { once: true, margin: "-100px" });
+
+  // Animation variants for different sliding directions
+  const slideFromLeft = {
+    hidden: { x: -50, opacity: 0 },
+    visible: (index) => ({
+      x: 0,
+      opacity: 1,
+      transition: {
+        delay: index * 0.1,
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    })
   };
 
-  const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Youtube, href: "#", label: "YouTube" }
-  ];
+  const slideFromRight = {
+    hidden: { x: 50, opacity: 0 },
+    visible: (index) => ({
+      x: 0,
+      opacity: 1,
+      transition: {
+        delay: index * 0.1,
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    })
+  };
 
-  const contactInfo = [
-    { icon: MapPin, text: "123 Business Avenue, Suite 100, New York, NY 10001" },
-    { icon: Phone, text: "+1 (555) 123-4567" },
-    { icon: Mail, text: "support@company.com" }
-  ];
+  const slideFromBottom = {
+    hidden: { y: 30, opacity: 0 },
+    visible: (index) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: index * 0.1,
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    })
+  };
 
   return (
-    <footer className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent" />
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-yellow-400/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-green-400/5 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Footer Content */}
-        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12">
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+    <footer ref={footerRef} className="bg-black relative">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4 relative">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Left Column - Logo and Navigation */}
+          <motion.div 
+            className="space-y-6"
+            variants={slideFromLeft}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            custom={0}
+          >
+            {/* Logo with animation */}
+            <motion.div 
+              className="flex items-center space-x-3"
+              variants={slideFromLeft}
+              custom={0}
+              whileHover={{}}
+              transition={{ duration: 0.2 }}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-yellow-400 to-green-500 flex items-center justify-center">
-                  <Home className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-green-400 bg-clip-text text-transparent">
-                  PropertyHub
-                </span>
-              </div>
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                Your trusted partner in finding the perfect property. We make buying, selling, and financing real estate simple and transparent.
-              </p>
-              
-              {/* Contact Info */}
-              <div className="space-y-3">
-                {contactInfo.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="flex items-start gap-3 text-sm text-gray-400 hover:text-green-400 transition-colors"
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                      <span>{item.text}</span>
-                    </motion.div>
-                  );
-                })}
-              </div>
+              <motion.div 
+                className="w-14 h-14 rounded-full flex items-center justify-center"
+                whileHover={{}}
+                transition={{ duration: 0.3 }}
+              >
+                <img src="/Logo2.png" alt="logo" className="w-full h-full" />
+              </motion.div>
+              <span className="text-2xl font-medium text-white/70">
+                Enviromat
+              </span>
             </motion.div>
-          </div>
 
-          {/* Links Sections */}
-          {Object.entries(footerLinks).map(([category, links], categoryIndex) => (
-            <motion.div
-              key={category}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
-            >
-              <h3 className="text-white font-semibold mb-4 capitalize">{category}</h3>
-              <ul className="space-y-3">
-                {links.map((link, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: categoryIndex * 0.1 + index * 0.05 }}
-                  >
-                    <a
-                      href={link.href}
-                      className="text-gray-400 hover:text-green-400 transition-colors text-sm inline-block hover:translate-x-1 transform duration-200"
-                    >
-                      {link.label}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Newsletter Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="py-8 border-t border-gray-700"
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-white font-semibold mb-2">Subscribe to Our Newsletter</h3>
-              <p className="text-gray-400 text-sm">Get the latest property listings and market insights.</p>
+            {/* Navigation Links with stagger animation */}
+            <div className="flex space-x-6">
+              {['About Us', 'Product', 'FAQ'].map((linkText, index) => (
+                <motion.a
+                  key={linkText}
+                  href="#"
+                  className="text-white/70 hover:text-gray-300 transition-colors relative"
+                  variants={slideFromLeft}
+                  custom={index + 1}
+                  whileHover={{ color: '#10B981' }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {linkText}
+                  <motion.div
+                    className={`absolute bottom-0 left-0 h-0.5 ${index === 1 ? 'bg-purple-400' : 'bg-green-400'}`}
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </motion.a>
+              ))}
             </div>
-            <div className="flex gap-2 w-full md:w-auto">
-              <input
+          </motion.div>
+
+          {/* Second Column - Newsletter Subscription */}
+          <motion.div
+            variants={slideFromBottom}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            custom={0}
+          >
+            <motion.h4 
+              className="text-gray-400 text-sm font-medium mb-4"
+              variants={slideFromBottom}
+              custom={0}
+              whileHover={{ color: '#10B981' }}
+              transition={{ duration: 0.2 }}
+            >
+              Newsletter
+            </motion.h4>
+            <motion.p 
+              className="text-white/70 text-sm mb-4"
+              variants={slideFromBottom}
+              custom={1}
+            >
+              Subscribe to our newsletter for updates
+            </motion.p>
+            <motion.div 
+              className="flex"
+              variants={slideFromBottom}
+              custom={2}
+            >
+              <motion.input
                 type="email"
                 placeholder="Enter your email"
-                className="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500 focus:outline-none focus:border-green-500 transition-colors flex-grow md:w-64"
+                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:border-purple-400 text-sm text-white placeholder-gray-400 transition-all duration-300"
+                whileFocus={{ 
+                  borderColor: '#C084FC',
+                  boxShadow: '0 0 0 2px rgba(192, 132, 252, 0.2)'
+                }}
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-green-500 text-white font-semibold hover:from-yellow-500 hover:to-green-600 transition-all"
+              <motion.button 
+                className="px-4 py-2 bg-purple-400 text-white rounded-r-lg hover:bg-purple-500 transition-colors text-sm font-medium"
+                whileHover={{ 
+                  scale: 1.05,
+                  backgroundColor: '#9333ea'
+                }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
               >
                 Subscribe
               </motion.button>
+            </motion.div>
+          </motion.div>
+
+          {/* Social Media */}
+          <motion.div 
+            className="space-y-4 ml-20"
+            variants={slideFromRight}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            custom={0}
+          >
+            <motion.h4 
+              className="text-gray-400 text-sm font-medium mb-4"
+              variants={slideFromRight}
+              custom={0}
+              whileHover={{}}
+              transition={{ duration: 0.2 }}
+            >
+              Social Media
+            </motion.h4>
+            <ul className="space-y-2">
+              {['Linkedin', 'Facebook', 'Instagram', 'Twitter', 'Youtube'].map((social, index) => (
+                <motion.li 
+                  key={social}
+                  variants={slideFromRight}
+                  custom={index + 1}
+                >
+                  <motion.a
+                    href="#"
+                    className="text-white/70 hover:text-gray-300 transition-colors text-sm relative inline-block"
+                    whileHover={{ 
+                      color: '#10B981'
+                    }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {social}
+                    <motion.span
+                      className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-green-400 rounded-full"
+                      initial={{ scale: 0 }}
+                      whileHover={{ scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </motion.a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Fourth Column - Contact Info and Address */}
+          <motion.div 
+            className="space-y-6"
+            variants={slideFromRight}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            custom={0}
+          >
+            {/* Contact Info */}
+            <div>
+              <motion.h4 
+                className="text-gray-400 text-sm font-medium mb-4"
+                variants={slideFromRight}
+                custom={0}
+                whileHover={{ }}
+                transition={{ duration: 0.2 }}
+              >
+                Contact Info
+              </motion.h4>
+              <ul className="space-y-2">
+                <motion.li 
+                  variants={slideFromRight}
+                  custom={1}
+                  whileHover={{ color: '#10B981' }} 
+                  transition={{ duration: 0.2 }}
+                >
+                  <span className="text-white/70 text-sm">
+                    +88 0324234234
+                  </span>
+                </motion.li>
+                <motion.li 
+                  variants={slideFromRight}
+                  custom={2}
+                  whileHover={{ color: '#10B981' }} 
+                  transition={{ duration: 0.2 }}
+                >
+                  <span className="text-white/70 text-sm">
+                    hello@fibostudio.com
+                  </span>
+                </motion.li>
+              </ul>
+            </div>
+
+            {/* Address */}
+            <div>
+              <motion.h4 
+                className="text-gray-400 text-sm font-medium mb-4"
+                variants={slideFromRight}
+                custom={3}
+                whileHover={{}}
+                transition={{ duration: 0.2 }}
+              >
+                Address
+              </motion.h4>
+              <motion.p 
+                className="text-white/70 text-sm"
+                variants={slideFromRight}
+                custom={4}
+                whileHover={{color: '#10B981'}}
+                transition={{ duration: 0.2 }}
+              >
+                336 East Shewrapara, Mirpur, Dhaka, Bangladesh
+              </motion.p>
+            </div>
+          </motion.div>
+        </div>
+
+        <motion.div 
+          className="w-full flex items-center justify-center mt-30"
+          variants={slideFromBottom}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          custom={5}
+        >
+          <motion.span
+            className="text-[7.29vw] lg:text-[10.5vw] font-bold select-none leading-tight tracking-tighter cursor-pointer scale-[1.02]"
+            style={{
+              background:
+                "linear-gradient(180deg, #3BF799 30%, #24D152 50%, #000000 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textShadow: "0 0 20px rgba(59, 247, 153, 0.3)"
+            }}
+            whileHover={{
+              textShadow: "0 0 30px rgba(59, 247, 153, 0.5)"
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            Rent.  Read.  Repeat.
+          </motion.span>
+        </motion.div>
+
+        {/* Bottom Section - Copyright and Policies */}
+        <motion.div 
+          className="border-t border-gray-800 mt-2 pt-8"
+          variants={slideFromBottom}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          custom={6}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <motion.div 
+              className="text-sm text-gray-500"
+              variants={slideFromLeft}
+              custom={7}
+              whileHover={{ color: '#9CA3AF' }}
+              transition={{ duration: 0.2 }}
+            >
+              © 2025 Algo Rhythm. All rights reserved.
+            </motion.div>
+            <div className="flex space-x-6 text-sm">
+              {['Privacy Policy', 'Terms of Services', 'Accessibility'].map((policy, index) => (
+                <motion.a
+                  key={policy}
+                  href="#"
+                  className="text-gray-500 hover:text-gray-300 transition-colors relative"
+                  variants={slideFromRight}
+                  custom={index + 8}
+                  whileHover={{
+                    color: '#10B981'
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {policy}
+                  <motion.div
+                    className="absolute bottom-0 left-0 h-0.5 bg-green-400"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </motion.a>
+              ))}
             </div>
           </div>
         </motion.div>
-
-        {/* Bottom Bar */}
-        <div className="py-8 border-t border-gray-700">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Copyright */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-gray-400 text-sm flex items-center gap-1"
-            >
-              © {new Date().getFullYear()} PropertyHub. Made with 
-              <Heart className="w-4 h-4 text-red-500 fill-red-500 inline-block mx-1" /> 
-              for you. All rights reserved.
-            </motion.div>
-
-            {/* Social Links */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex gap-3"
-            >
-              {socialLinks.map((social, index) => {
-                const Icon = social.icon;
-                return (
-                  <motion.a
-                    key={index}
-                    href={social.href}
-                    aria-label={social.label}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ 
-                      duration: 0.3, 
-                      delay: 0.3 + index * 0.1,
-                      type: "spring",
-                      stiffness: 200
-                    }}
-                    whileHover={{ 
-                      scale: 1.2,
-                      rotate: 5,
-                      transition: { duration: 0.2 }
-                    }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gradient-to-r hover:from-yellow-400 hover:to-green-500 hover:border-transparent transition-all duration-300"
-                  >
-                    <Icon className="w-5 h-5" />
-                  </motion.a>
-                );
-              })}
-            </motion.div>
-          </div>
-        </div>
       </div>
-
-      {/* Decorative Bottom Line */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-green-500 to-yellow-400" />
     </footer>
   );
-}
+};
+
+export default Footer;
