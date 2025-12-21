@@ -1,12 +1,15 @@
-import Register from "@/common/register";
+import SellerBids from "@/seller/pages/SellerBids";
 
 const pageRoutes = {
   Landing: '/',
   Register:'/register',
   Login: '/login',
   SellerDashboard: '/seller/dashboard',
-  SellerUploads:'/seller/uploads'
-  
+  SellerUploads:'/seller/uploads',
+  LenderDashboard:'/lender/dashboard',
+  SellerBids:'/seller/bids',
+  SellerChat:'/seller/chat',
+  SellerNotification:'/seller/notification'
 };
 
 // This function converts a page key to a usable URL

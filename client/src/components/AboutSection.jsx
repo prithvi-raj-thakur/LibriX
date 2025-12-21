@@ -1,8 +1,10 @@
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 import VideoText from "./lightswind/video-text";
-import Video from "../assets/videos/heroVideo.mp4"
+import Video from "../assets/videos/AboutVideo.mp4"
+import Kolkata from "../assets/Kolkata.jpg"
 import { motion } from "framer-motion";
+import heroVideo from "../assets/videos/heroVideo.mp4";
 
 const containerVariants = {
   hidden: {},
@@ -29,14 +31,14 @@ const cardVariants = {
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 bg-primary bg-gradient-to-br from-green-200 via-white to-yellow-100 backdrop-blur-lg
+    <section id="features" className="py-20 bg-primary bg-white backdrop-blur-lg
                   borderz-10 relative">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="mb-16">
           <VideoText
             as="h2"
-            src={Video}
+            src={heroVideo}
             fontSize={16} // vw-based, tweak for responsiveness
             fontWeight={800}
             className="w-full h-[140px] md:h-[180px] mb-2"
@@ -67,7 +69,7 @@ const Features = () => {
         {/* Feature 1 */}
         <motion.div
           variants={cardVariants}
-          className="md:col-span-3 md:row-span-2 p-8 bg-gradient-to-br from-amber-100 to-rose-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
+          className="md:col-span-3 md:row-span-2 p-8 bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
         >
           <div className="flex flex-col h-full">
             <div className="mb-6 flex justify-between items-center">
@@ -103,7 +105,7 @@ const Features = () => {
         {/* Feature 2 */}
         <motion.div
           variants={cardVariants}
-          className="md:col-span-3 p-8 flex justify-between items-end gap-6 bg-gradient-to-br from-amber-100 to-rose-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
+          className="md:col-span-3 p-8 flex justify-between items-end gap-6 bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
         >
           <div>
             <div className="mb-6 flex justify-between items-center">
@@ -131,7 +133,7 @@ const Features = () => {
         {/* Feature 3 */}
         <motion.div
           variants={cardVariants}
-          className="md:col-span-2 p-8 bg-gradient-to-br from-amber-100 to-rose-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
+          className="md:col-span-2 p-8 bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
         >
           <div className="mb-6 flex justify-between items-center">
             <div className="text-5xl group-hover:scale-110 transition-transform">💰</div>
@@ -153,7 +155,7 @@ const Features = () => {
         {/* Feature 4 */}
         <motion.div
           variants={cardVariants}
-          className="md:col-span-1 p-8 bg-gradient-to-br from-amber-100 to-rose-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group text-center"
+          className="md:col-span-1 p-8 bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group text-center"
         >
           <div className="mb-4">
             <div className="bg-gray-400/60 p-4 rounded-full inline-block group-hover:rotate-45 transition-transform">
@@ -175,7 +177,7 @@ const Features = () => {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true }}
-        className="mt-6 p-8 bg-gradient-to-br from-amber-100 to-rose-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
+        className="mt-6 p-8 bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border border-white/30 rounded-3xl hover:border-amber-400/50 transition-all duration-300 hover:-translate-y-1 group"
       >
         <div className="flex gap-6">
           <div className="text-5xl group-hover:scale-110 transition-transform">🏛️</div>
@@ -198,7 +200,7 @@ const Features = () => {
           </div>
 
           <div className="overflow-hidden rounded-2xl h-44 w-72 border border-white/30">
-            <img className="w-full h-full object-cover" src="/library.jpg" alt="" />
+            <img className="w-full h-full object-cover" src={Kolkata} alt="" />
           </div>
         </div>
       </motion.div>

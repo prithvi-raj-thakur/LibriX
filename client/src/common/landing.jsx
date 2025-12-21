@@ -6,6 +6,10 @@ import ContactForm from '@/components/ContactSection'
 import Footer from '@/components/Footer'
 import Testimonials from '@/components/Testimonials'
 import AboutSection from '@/components/AboutSection'
+import LegacySection from '@/components/LegacySection'
+import Band from '@/components/Band'
+import FAQ from '@/components/Faq'
+import CircularGallery from '@/components/CircularImages'
 
 
 const landing = () => {
@@ -15,7 +19,11 @@ const landing = () => {
       <Hero />
       <AboutSection />
       <Timeline/>
+      <LegacySection />
+      <Band />
+      <CircularGallery />
       <Testimonials/>
+      <FAQ />
       <ContactForm/>
       <Footer/>
     </>
