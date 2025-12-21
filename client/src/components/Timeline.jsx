@@ -35,7 +35,7 @@ const steps = [
 
 export default function HowItWorksHorizontal() {
   return (
-    <section className="bg-gradient-to-br from-yellow-100 via-white to-green-100 py-24">
+    <section className="bg-white py-24">
       {/* Heading */}
       <div className="max-w-4xl mx-auto text-center mb-16">
         <h2 className="text-6xl font-bold mb-4 text-slate-900">

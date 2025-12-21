@@ -140,7 +140,7 @@ export default function Testimonials() {
   );
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-green-50 via-white to-yellow-50 overflow-hidden">
+    <section className="relative py-24 bg-white overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-green-400/50 to-transparent" />

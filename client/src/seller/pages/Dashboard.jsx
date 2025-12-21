@@ -17,6 +17,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { User , Calendar } from "lucide-react";
+
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Navbar from './Navbar';
 
@@ -109,6 +111,26 @@ export default function SellerDashboard() {
       change: '3 new requests',
       bgColor: 'bg-white-100',
       iconColor: 'text-grey-600'
+    },
+  ];
+  const myBooks = [
+    {
+      id: 1,
+      title: "The Alchemist",
+      author: "Paulo Coelho",
+      cover_image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop",
+      publishing_year: 1988,
+      sell_price: 299,
+      status: "available"
+    },
+    {
+      id: 2,
+      title: "Atomic Habits",
+      author: "James Clear",
+      cover_image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop",
+      publishing_year: 2018,
+      sell_price: 450,
+      status: "available"
     },
   ];
 
@@ -382,7 +404,105 @@ export default function SellerDashboard() {
           </motion.div>
 
           {/* Right half – intentionally blank */}
-          <div className="hidden lg:block lg:w-1/2" />
+          <div className="hidden pl-5 lg:block lg:w-1/2">
+           <div className="lg:col-span-1">
+            <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-yellow-50 h-fit sticky top-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-green-600" />
+                  My Books
+                  <Badge variant="secondary" className="ml-auto bg-green-100 text-green-700">
+                    {myBooks.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                {/* Show only first 4 books */}
+                {myBooks.slice(0, 4).map((book, index) => (
+                  <motion.div
+                    key={book.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex gap-3 p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm hover:shadow-md transition-all duration-300"
+                  >
+                    <img
+                      src={
+                        book.cover_image ||
+                        'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop'
+                      }
+                      alt={book.title}
+                      className="w-16 h-20 object-cover rounded-lg shadow-sm"
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-slate-900 text-sm truncate">
+                        {book.title}
+                      </h4>
+
+                      <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                        <User className="w-3 h-3" />
+                        <span className="truncate">{book.author}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                        <Calendar className="w-3 h-3" />
+                        <span>{book.publishing_year || 'N/A'}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 mt-2">
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-green-500 text-white text-xs px-2 py-0.5">
+                          <IndianRupee className="w-3 h-3 mr-0.5" />
+                          {book.sell_price}
+                        </Badge>
+
+                        <Badge
+                          variant="outline"
+                          className={`text-xs capitalize ${
+                            book.status === 'sold'
+                              ? 'border-red-200 text-red-600 bg-red-50'
+                              : 'border-green-200 text-green-600 bg-green-50'
+                          }`}
+                        >
+                          {book.status || 'available'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+
+                  </motion.div>
+                ))}
+
+                {/* +45 more – UI only */}
+                <div className="pt-3 flex justify-center">
+                  <div
+                    className="
+                      w-1/2
+                      py-2
+                      text-center
+                      text-md
+                      rounded-xl
+                      border border-dashed border-green-300
+                      bg-white/70
+                       font-semibold text-green-700
+                      cursor-default
+                      transition-all duration-300
+                      hover:bg-green-50
+                      hover:border-green-400
+                      hover:text-green-800
+                      hover:shadow-sm
+                    "
+                  >
+                    +45 more
+                  </div>
+                </div>
+
+              </CardContent>
+            </Card>
+          </div>
+
+          </div>
         </div>
 
       </div>
