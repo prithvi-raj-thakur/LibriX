@@ -7,6 +7,7 @@ import sellerAuthRouter from './seller/routes/sellerAuth.route.js';
 import buyerAuthRouter from './customer/routes/buyerAuth.route.js';
 import lenderAuthRoutes from './lender/routes/lenderAuth.route.js'
 import ocrRouter from './seller/routes/ocr.route.js';
+import bookRouter from './seller/routes/book.route.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use("/api/seller", sellerAuthRouter);
 app.use("/api/buyer", buyerAuthRouter);
 app.use("/api/lender", lenderAuthRoutes);
 app.use("/api/ocr", ocrRouter);
+app.use("/api/books", bookRouter);
 
 
 app.get('/', (req, res) => {
