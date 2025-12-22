@@ -90,7 +90,7 @@ export default function login() {
       
       // --- SECURE STORAGE ---
       // Use fallbacks to prevent "undefined" string from being saved
-      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("sellerToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user || { name: "User" }));
       localStorage.setItem("userType", userType);
 

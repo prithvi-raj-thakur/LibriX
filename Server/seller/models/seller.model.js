@@ -5,38 +5,39 @@ const sellerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     shopName: { type: String, required: true },
-
     phone: {
       type: String,
       required: true,
       unique: true
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true
     },
-
     shopAddress: { type: String, required: true },
-
     gstNumber: {
       type: String,
       default: null
     },
-
     password: {
       type: String,
       required: true,
       minlength: 6,
       select: false
     },
-
     refreshToken: {
       type: String,
       select: false
-    }
+    },
+    // --- ADDED FIELD FOR BOOK MANAGEMENT ---
+    inventory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Book"
+      }
+    ]
   },
   { timestamps: true }
 );
@@ -46,9 +47,8 @@ sellerSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 10);
+  // No next() needed here
 });
-
-
 
 /* 🔑 PASSWORD COMPARE METHOD */
 sellerSchema.methods.comparePassword = async function (enteredPassword) {

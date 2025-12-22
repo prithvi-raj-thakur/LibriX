@@ -11,7 +11,6 @@ import LenderDashboard from "./lender/pages/Dashboard.jsx";
 import SellerBids from "./seller/pages/SellerBids.jsx";
 import SellerChat from "./seller/pages/SellerChat.jsx";
 import SellerNotifications from "./seller/pages/SellerNotification.jsx";
-import SellerUploads from "./seller/pages/upload.jsx";
 
 import SellerProtectedRoute from "./utils/sellerProtectedRoute.jsx";
 
