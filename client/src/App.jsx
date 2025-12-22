@@ -11,6 +11,8 @@ import LenderDashboard from "./lender/pages/Dashboard.jsx";
 import SellerBids from "./seller/pages/SellerBids.jsx";
 import SellerChat from "./seller/pages/SellerChat.jsx";
 import SellerNotifications from "./seller/pages/SellerNotification.jsx";
+import UserHome from "./buyer/pages/UserHome.jsx";
+
 
 import SellerProtectedRoute from "./utils/sellerProtectedRoute.jsx";
 
@@ -31,6 +33,7 @@ export default function App() {
           <Route path="/seller/chat" element={<SellerChat />} />
           <Route path="/seller/notification" element={<SellerNotifications />} />
           <Route path="/lender/dashboard" element={<LenderDashboard />} />
+          <Route path="/buyer/home" element={<UserHome />} />
         </Route>
 
         {/* -------- FALLBACK -------- */}
