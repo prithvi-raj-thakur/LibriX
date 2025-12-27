@@ -12,6 +12,7 @@ import connectCloudinary from "./configs/cloudinaryConfig.js";
 import sellerAuthRouter from "./routes/sellerAuth.route.js";
 import buyerAuthRouter from "./routes/buyerAuth.route.js";
 import lenderAuthRoutes from "./routes/lenderAuth.route.js";
+import lendBookRouter from "./routes/lendBook.route.js";
 import ocrRouter from "./routes/ocr.route.js";
 import bookRouter from "./routes/book.route.js";
 import orderRouter from "./routes/order.route.js";
@@ -37,6 +38,7 @@ app.use("/api/lender", lenderAuthRoutes);
 app.use("/api/ocr", ocrRouter);
 app.use("/api/books", bookRouter);
 app.use("/api/orders", orderRouter);
+app.use("/api/lend-books", lendBookRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the LibriX Server!");

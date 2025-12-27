@@ -1,16 +1,14 @@
-
-
 import express from 'express';
 import multer from 'multer';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
+import { generateSpeech } from '../utils/elevenLabsTTS.js';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/temp/' });
 
-// Ensure temp directory exists
 const tempDir = path.resolve('uploads/temp');
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
@@ -23,19 +21,12 @@ router.post('/process', upload.single('image'), async (req, res) => {
         }
 
         // 1️⃣ Upload image to Cloudinary
-        const cloudResult = await cloudinary.uploader.upload(req.file.path, {
-            folder: 'book_descriptions',
-            upload_preset: 'librix_unsigned_preset_2'
+        const cloudImage = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'book_descriptions'
         });
 
-        // 2️⃣ Absolute path to Python script
-        const scriptPath = path.join(
-            process.cwd(),
-            'ocr_feature',
-            'ocr.py'
-        );
-
-        // 3️⃣ Choose correct Python command
+        // 2️⃣ Run Python OCR
+        const scriptPath = path.join(process.cwd(), 'ocr_feature', 'ocr.py');
         const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
 
         const pythonProcess = spawn(pythonCmd, [scriptPath, req.file.path]);
@@ -43,30 +34,44 @@ router.post('/process', upload.single('image'), async (req, res) => {
         let output = '';
         let errorOutput = '';
 
-        pythonProcess.stdout.on('data', data => {
-            output += data.toString();
-        });
+        pythonProcess.stdout.on('data', d => output += d.toString());
+        pythonProcess.stderr.on('data', d => errorOutput += d.toString());
 
-        pythonProcess.stderr.on('data', data => {
-            errorOutput += data.toString();
-        });
-
-        pythonProcess.on('close', code => {
-            // Cleanup AFTER python finishes
+        pythonProcess.on('close', async code => {
             fs.unlink(req.file.path, () => {});
 
             if (code !== 0) {
-                console.error('Python STDERR:', errorOutput);
-                return res.status(500).json({
-                    error: 'OCR processing failed',
-                    details: errorOutput
-                });
+                return res.status(500).json({ error: errorOutput });
             }
 
-            res.json({
-                text: output.trim(),
-                imageUrl: cloudResult.secure_url
-            });
+            const extractedText = output.trim();
+
+            try {
+                // 3️⃣ Generate MP3 using ElevenLabs
+                const audioPath = path.join(tempDir, `desc-${Date.now()}.mp3`);
+                await generateSpeech(extractedText, audioPath);
+
+                // 4️⃣ Upload MP3 to Cloudinary
+                const cloudAudio = await cloudinary.uploader.upload(audioPath, {
+                    resource_type: "video",
+                    folder: "book_audio_descriptions"
+                });
+
+                fs.unlink(audioPath, () => {});
+
+                // 5️⃣ Return everything
+                res.json({
+                    extractedText,
+                    imageUrl: cloudImage.secure_url,
+                    audioUrl: cloudAudio.secure_url
+                });
+
+            } catch (ttsError) {
+                console.error("TTS ERROR:", ttsError.message);
+                return res.status(500).json({
+                    error: "Audio generation failed"
+                });
+            }
         });
 
     } catch (err) {

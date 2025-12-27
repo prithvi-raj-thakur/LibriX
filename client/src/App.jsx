@@ -13,9 +13,12 @@ import SellerNotification from "./seller/pages/SellerNotification.jsx";
 
 import LenderDashboard from "./lender/pages/Dashboard.jsx";
 import LenderUpload from "./lender/pages/LenderUpload.jsx";
+import LenderBooks from "./lender/pages/UploadedBooks.jsx"
 
 import UserHome from "./buyer/pages/UserHome.jsx";
 import BuyerNotification from "./buyer/pages/BuyerNotifications.jsx";
+import BookDetails from "./buyer/pages/BookDetails.jsx";
+import LendBookDetails from "./buyer/pages/LendBookDetails.jsx";
 
 import SellerProtectedRoute from "./utils/sellerProtectedRoute.jsx";
 import BuyerProtectedRoute from "./utils/buyerProtectedRoute.jsx";
@@ -42,6 +45,7 @@ export default function App() {
         >
           <Route path="/lender/dashboard" element={<LenderDashboard />} />
           <Route path="/lender/upload" element={<LenderUpload />} />
+          <Route path="/lender/books" element={<LenderBooks />} />
         </Route>
 
         {/* ---------- SELLER ROUTES (WITH SOCKET) ---------- */}
@@ -71,6 +75,8 @@ export default function App() {
           }
         >
           <Route path="/buyer/home" element={<UserHome />} />
+          <Route path="/buyer/book-details/:bookId" element={<BookDetails />} />
+          <Route path="/buyer/lendBook-details/:bookId" element={<LendBookDetails />} />
           <Route
             path="/buyer/notification"
             element={<BuyerNotification />}

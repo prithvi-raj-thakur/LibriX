@@ -56,8 +56,7 @@ export default function SellerUpload() {
 
   // --- Real Logic: Fetch Books from Backend ---
 const fetchMyBooks = async () => {
-  // Use 'accessToken' if that is what your Login.jsx saves
-  const token = localStorage.getItem('accessToken'); 
+  const token = localStorage.getItem('sellerAccessToken'); 
 
   if (!token) {
     console.warn("No token found for fetching books");
@@ -181,7 +180,7 @@ const handleSubmit = async (e) => {
   setIsSubmitting(true);
 
   // Use the exact key name you saved during login
-  const token = localStorage.getItem('sellerToken'); 
+  const token = localStorage.getItem('sellerAccessToken'); 
 
   try {
     const response = await fetch('http://localhost:3000/api/books/add', {

@@ -34,12 +34,12 @@ export default function Navbar() {
     navigate(path);
   };
 
-  /* 🔥 Seller Navigation Links */
+  /* 🔥 Lender Navigation Links */
   const links = [
-    { id: "home", label: "Home", href: "/seller/dashboard", icon: <Home /> },
-    { id: "bidding", label: "Reverse Bidding", href: "/seller/bidding", icon: <Gavel /> },
+    { id: "home", label: "Dashboard", href: "/lender/dashboard", icon: <Home /> },
+    { id: "bidding", label: "My Upload", href: "/lender/books", icon: <Gavel /> },
     { id: "orders", label: "My Orders", href: "/seller/orders", icon: <Package /> },
-    { id: "books", label: "Books", href: "/lender/upload", icon: <BookOpen /> },
+    { id: "books", label: "Upload books", href: "/lender/upload", icon: <BookOpen /> }
   ];
 
   return (

@@ -1,27 +1,46 @@
-import React, { useState, useEffect } from "react";
-import  {useNavigate}  from "react-router-dom";
-
-import { Menu, X, Bell, User } from "lucide-react";
-import  DynamicNavigation  from "@/components/lightswind/dynamic-navigation";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom"; // Added Link for navigation
+import { Menu, X, Bell, User, LogOut, Settings } from "lucide-react"; // Added new icons
+import DynamicNavigation from "@/components/lightswind/dynamic-navigation";
 import { Home, Gavel, Package, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Logo from "@/assets/logo.png"; // 👈 adjust path if needed
-
+import Logo from "@/assets/logo.png";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false); // State for dropdown
+  
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null); // Ref to handle clicking outside
 
-const navigate = useNavigate();
-
-
+  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* 🔥 Seller Navigation Links */
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* 🔥 Logout Functionality */
+  const handleLogout = () => {
+    // 1. Clear local storage/session storage
+    localStorage.removeItem("token"); // Adjust based on your auth logic
+    // 2. Redirect to login or home
+    navigate("/login");
+    console.log("User logged out");
+  };
+
   const links = [
     { id: "home", label: "Home", href: "/seller/dashboard", icon: <Home /> },
     { id: "bidding", label: "Reverse Bidding", href: "/seller/bidding", icon: <Gavel /> },
@@ -44,44 +63,75 @@ const navigate = useNavigate();
           }`}
         >
           <div className="flex items-center justify-between px-6 py-4">
-
+            
             {/* ================= LEFT : LOGO ================= */}
             <div className="flex items-center gap-3">
-              <img
-                src={Logo}
-                alt="Logo"
-                className="w-40 h-10 object-contain"
-              />
-              
+              <img src={Logo} alt="Logo" className="w-40 h-10 object-contain" />
             </div>
 
             {/* ================= CENTER : DYNAMIC NAV ================= */}
             <div className="hidden md:flex items-center whitespace-nowrap">
-            <DynamicNavigation
+              <DynamicNavigation
                 links={links}
                 theme="light"
                 glowIntensity={4}
                 onLinkClick={(id) => console.log("Clicked:", id)}
-                className="flex-nowrap bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg
-                  border"
-            />
+                className="flex-nowrap bg-gradient-to-br from-green-200 to-yellow-100 backdrop-blur-lg border"
+              />
             </div>
 
             {/* ================= RIGHT : ICONS ================= */}
             <div className="flex items-center gap-4">
               {/* Notification */}
-              <button onClick={() => navigate("/buyer/notification")}
-              className="relative p-2 rounded-xl hover:bg-slate-100 transition">
+              <button
+                onClick={() => navigate("/buyer/notification")}
+                className="relative p-2 rounded-xl hover:bg-slate-100 transition"
+              >
                 <Bell className="w-5 h-5 text-slate-700" />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
               </button>
 
-              {/* User */}
-              <button className="p-2 rounded-xl hover:bg-slate-100 transition">
-                <User className="w-5 h-5 text-slate-700" />
-              </button>
+              {/* Profile Dropdown Container */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className={`p-2 rounded-xl transition ${
+                    isProfileOpen ? "bg-slate-100" : "hover:bg-slate-100"
+                  }`}
+                >
+                  <User className="w-5 h-5 text-slate-700" />
+                </button>
 
-              {/* Mobile menu */}
+                {/* Dropdown Menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-[60] animate-in fade-in zoom-in duration-200">
+                    <button
+                      onClick={() => { navigate("/profile"); setIsProfileOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => { navigate("/settings"); setIsProfileOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </button>
+                    <hr className="my-1 border-slate-100" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile menu toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden p-2 rounded-xl hover:bg-slate-100"

@@ -1,6 +1,3 @@
-
-
-
 import sys
 import os
 import cv2
@@ -21,11 +18,17 @@ if os.path.exists(DICT_PATH):
     with open(DICT_PATH, "r", encoding="utf-8") as f:
         BN_WORDS = [w.strip() for w in f if len(w.strip()) > 1]
 
-# ---------- LOAD OCR MODEL (ONCE) ----------
-reader = easyocr.Reader(
-    ['bn', 'en'],
+# ---------- LOAD OCR MODELS (ONCE) ----------
+bn_reader = easyocr.Reader(
+    ['bn'],
     gpu=False,
-    verbose=False   # 🔥 critical for Windows
+    verbose=False
+)
+
+en_reader = easyocr.Reader(
+    ['en'],
+    gpu=False,
+    verbose=False
 )
 
 # ---------- SPELL CORRECTION ----------
@@ -58,10 +61,9 @@ def main():
     if img is None:
         sys.exit(1)
 
-    # ---------- SAFE IMAGE RESIZE (MEMORY FIX) ----------
+    # ---------- SAFE IMAGE RESIZE ----------
     h, w = img.shape[:2]
-    max_dim = 1200
-
+    max_dim = 1600
     if max(h, w) > max_dim:
         scale = max_dim / max(h, w)
         img = cv2.resize(
@@ -70,35 +72,46 @@ def main():
             interpolation=cv2.INTER_AREA
         )
 
-    # ---------- PREPROCESS (BENGALI FRIENDLY) ----------
+    # ---------- PREPROCESS (OCR FRIENDLY) ----------
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.bilateralFilter(gray, 7, 50, 50)
 
-    _, thresh = cv2.threshold(
-        gray, 0, 255,
-        cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
+    # IMPORTANT: NO THRESHOLDING (breaks Bengali matra)
+    gray = cv2.fastNlMeansDenoising(gray, h=15)
 
-    # ---------- OCR (MEMORY-SAFE SETTINGS) ----------
-    results = reader.readtext(
-        thresh,
+    # ---------- OCR PASS 1: BENGALI ----------
+    bn_results = bn_reader.readtext(
+        gray,
         detail=0,
         paragraph=True,
         batch_size=1,
-        canvas_size=1024,   # 🔥 prevents 1GB alloc
-        mag_ratio=1.0,     # 🔥 no internal upscaling
+        canvas_size=1024,
+        mag_ratio=1.0,
         low_text=0.4,
         text_threshold=0.6,
         link_threshold=0.4
     )
+    bn_text = "\n".join(bn_results)
 
-    text = "\n\n".join(results)
+    # ---------- OCR PASS 2: ENGLISH ----------
+    en_results = en_reader.readtext(
+        gray,
+        detail=0,
+        paragraph=True,
+        batch_size=1,
+        canvas_size=1024,
+        mag_ratio=1.0
+    )
+    en_text = "\n".join(en_results)
 
-    # ---------- OUTPUT ONLY CLEAN TEXT ----------
-    print(correct_text(text))
+    # ---------- PICK BETTER RESULT ----------
+    final_text = bn_text if len(bn_text.strip()) > len(en_text.strip()) else en_text
+
+    # ---------- SPELL CORRECTION (BN ONLY) ----------
+    final_text = correct_text(final_text)
+
+    # ---------- OUTPUT ----------
+    print(final_text.strip())
 
 # ---------- ENTRY ----------
 if __name__ == "__main__":
     main()
-
-
