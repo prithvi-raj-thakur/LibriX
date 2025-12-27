@@ -55,12 +55,23 @@ export default function SellerDashboard() {
 
   // AUTHENTICATION & DATA FETCHING
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const sellerToken = localStorage.getItem('sellerToken'); // Standardizing with your upload page
-    const userType = localStorage.getItem('userType');
-    const storedUserRaw = localStorage.getItem('user');
+    const sellerToken = localStorage.getItem("sellerAccessToken");
+    const userType = localStorage.getItem("userType");
+    const storedUserRaw = localStorage.getItem("sellerUser");
 
-    if (!token || userType !== 'seller' || !storedUserRaw || storedUserRaw === "undefined") {
+
+    console.log("Seller Token:", sellerToken);
+    console.log("User Type:", userType);
+    console.log("Stored User Raw:", storedUserRaw);
+
+    // Check if values are null OR the literal string "undefined"
+   const isAuthValid =
+              !!sellerToken &&
+              userType === "seller" &&
+              !!storedUserRaw;
+
+
+    if (!isAuthValid) {
       console.warn("Auth failed or user data missing, redirecting...");
       navigate('/login');
     } else {
@@ -68,8 +79,8 @@ export default function SellerDashboard() {
         const parsedUser = JSON.parse(storedUserRaw);
         setUser(parsedUser);
         
-        // Fetch real books from backend
-        fetchBackendBooks(sellerToken || token);
+        // ✅ FIX: Use sellerToken here
+        fetchBackendBooks(sellerToken); 
         
         setIsLoading(false);
       } catch (err) {
@@ -79,7 +90,7 @@ export default function SellerDashboard() {
     }
   }, [navigate]);
 
-  const fetchBackendBooks = async (token) => {
+ const fetchBackendBooks = async (token) => {
     try {
       const response = await fetch('http://localhost:3000/api/books/my-books', {
         method: 'GET',
@@ -91,8 +102,6 @@ export default function SellerDashboard() {
       if (response.ok) {
         const data = await response.json();
         setBooks(data);
-      } else {
-        console.error("Failed to fetch books:", response.status);
       }
     } catch (error) {
       console.error("Error fetching dashboard books:", error);

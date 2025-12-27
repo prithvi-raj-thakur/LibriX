@@ -7,7 +7,7 @@ import {
   updateLenderProfile,
   refreshLenderToken,
   logoutLender
-} from "../Controllers/lenderAuth.controller.js";
+} from "../controllers/lenderAuth.controller.js";
 
 import { lenderProtect } from "../middlewares/lenderAuth.middleware.js";
 

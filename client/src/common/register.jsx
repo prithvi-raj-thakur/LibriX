@@ -128,12 +128,30 @@ export default function Register() {
       }
       
       // --- LOGIC FOR AUTO-LOGIN ---
-      // If backend returns a token on register, save it to satisfy Dashboard auth check
-      if (data.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("user", JSON.stringify(data.user || { name: formData.name }));
-        localStorage.setItem("userType", userType);
-      }
+      // --- ROLE-SAFE AUTO-LOGIN ---
+if (data.accessToken) {
+  // 🔥 Clear legacy / conflicting tokens
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("buyerAccessToken");
+  localStorage.removeItem("sellerAccessToken");
+  localStorage.removeItem("lenderAccessToken");
+
+  // 🔥 Store token by role
+  if (userType === "buyer") {
+    localStorage.setItem("buyerAccessToken", data.accessToken);
+  } else if (userType === "seller") {
+    localStorage.setItem("sellerAccessToken", data.accessToken);
+  } else if (userType === "lender") {
+    localStorage.setItem("lenderAccessToken", data.accessToken);
+  }
+
+  // Common data
+  localStorage.setItem(
+    "user",
+    JSON.stringify(data.user || { name: formData.name })
+  );
+  localStorage.setItem("userType", userType);
+}
 
       setSubmitStatus('success');
 

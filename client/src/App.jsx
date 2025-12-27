@@ -6,50 +6,80 @@ import Register from "./common/register.jsx";
 import Login from "./common/Login.jsx";
 
 import SellerDashboard from "./seller/pages/Dashboard.jsx";
-import SellerUploads from "./seller/pages/upload.jsx"
-import LenderDashboard from "./lender/pages/Dashboard.jsx";
+import SellerUploads from "./seller/pages/upload.jsx";
 import SellerBids from "./seller/pages/SellerBids.jsx";
 import SellerChat from "./seller/pages/SellerChat.jsx";
-import SellerNotifications from "./seller/pages/SellerNotification.jsx";
-import UserHome from "./buyer/pages/UserHome.jsx";
-import BuyerNotifications from "./buyer/pages/BuyerNotifications.jsx";
+import SellerNotification from "./seller/pages/SellerNotification.jsx";
 
+import LenderDashboard from "./lender/pages/Dashboard.jsx";
+import LenderUpload from "./lender/pages/LenderUpload.jsx";
+
+import UserHome from "./buyer/pages/UserHome.jsx";
+import BuyerNotification from "./buyer/pages/BuyerNotifications.jsx";
 
 import SellerProtectedRoute from "./utils/sellerProtectedRoute.jsx";
-import BuyerProtectedRoute from "./utils/buyerProtectedRoute.jsx"
+import BuyerProtectedRoute from "./utils/buyerProtectedRoute.jsx";
+import LenderProtectedRoute from "./utils/lenderProtectedRoute.jsx";
+
+import { SocketProvider } from "./utils/SocketProvider.jsx";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* -------- PUBLIC ROUTES -------- */}
+        {/* ---------- PUBLIC ROUTES ---------- */}
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-          <Route path="/lender/dashboard" element={<LenderDashboard />} />
-        <Route path="/buyer/notifications" element={<BuyerNotifications />} />  
-          
 
-        {/* -------- SELLER PROTECTED ROUTES -------- */}
-        <Route element={<SellerProtectedRoute />}>
+        {/* ---------- LENDER ROUTES (WITH SOCKET) ---------- */}
+        <Route
+          element={
+            <LenderProtectedRoute>
+              <SocketProvider role="lender" />
+            </LenderProtectedRoute>
+          }
+        >
+          <Route path="/lender/dashboard" element={<LenderDashboard />} />
+          <Route path="/lender/upload" element={<LenderUpload />} />
+        </Route>
+
+        {/* ---------- SELLER ROUTES (WITH SOCKET) ---------- */}
+        <Route
+          element={
+            <SellerProtectedRoute>
+              <SocketProvider role="seller" />
+            </SellerProtectedRoute>
+          }
+        >
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
           <Route path="/seller/uploads" element={<SellerUploads />} />
           <Route path="/seller/bids" element={<SellerBids />} />
           <Route path="/seller/chat" element={<SellerChat />} />
-          <Route path="/seller/notification" element={<SellerNotifications />} /> 
+          <Route
+            path="/seller/notification"
+            element={<SellerNotification />}
+          />
         </Route>
 
-        {/* -------- BUYER PROTECTED ROUTES -------- */}
-        <Route element={<BuyerProtectedRoute />}>
-         <Route path="/buyer/home" element={<UserHome />} />
+        {/* ---------- BUYER ROUTES (WITH SOCKET) ---------- */}
+        <Route
+          element={
+            <BuyerProtectedRoute>
+              <SocketProvider role="buyer" />
+            </BuyerProtectedRoute>
+          }
+        >
+          <Route path="/buyer/home" element={<UserHome />} />
+          <Route
+            path="/buyer/notification"
+            element={<BuyerNotification />}
+          />
         </Route>
 
-
-
-        {/* -------- FALLBACK -------- */}
+        {/* ---------- FALLBACK ---------- */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
-

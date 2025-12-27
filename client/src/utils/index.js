@@ -1,5 +1,4 @@
-import BuyerNotifications from "@/buyer/pages/BuyerNotifications";
-import SellerBids from "@/seller/pages/SellerBids";
+
 
 const pageRoutes = {
   Landing: '/',
@@ -8,14 +7,22 @@ const pageRoutes = {
   SellerDashboard: '/seller/dashboard',
   SellerUploads:'/seller/uploads',
   LenderDashboard:'/lender/dashboard',
+  LenderUpload:'/lender/upload',
   SellerBids:'/seller/bids',
   SellerChat:'/seller/chat',
   SellerNotification:'/seller/notification',
   UserHome:'/buyer/home',
-  BuyerNotifications:'/buyer/notifications'
+  BuyerNotification:'/buyer/notification'
 };
 
 // This function converts a page key to a usable URL
 export function createPageUrl(pageName) {
   return pageRoutes[pageName] || '/';
 }
+
+// -------- PROTECTED ROUTES --------
+export { default as SellerProtectedRoute } from "./sellerProtectedRoute.jsx";
+export { default as BuyerProtectedRoute } from "./buyerProtectedRoute.jsx";
+
+// -------- SOCKET PROVIDER (🔥 REQUIRED FIX) --------
+export { SocketProvider } from "./SocketProvider.jsx";

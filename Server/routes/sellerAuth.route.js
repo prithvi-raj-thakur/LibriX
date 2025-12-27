@@ -9,7 +9,7 @@ import {
   updateSellerProfile
 } from "../controllers/sellerAuth.controller.js";
 
-import { sellerProtect } from "../middlewares/auth.middleware.js";
+import { sellerProtect } from "../middlewares/sellerAuth.middleware.js";
 
 const router = express.Router();
 

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
+import  {useNavigate}  from "react-router-dom";
+
 import { Menu, X, Bell, User } from "lucide-react";
 import  DynamicNavigation  from "@/components/lightswind/dynamic-navigation";
 import { Home, Gavel, Package, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/logo.png"; // 👈 adjust path if needed
 
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+const navigate = useNavigate();
+
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -64,7 +70,8 @@ export default function Navbar() {
             {/* ================= RIGHT : ICONS ================= */}
             <div className="flex items-center gap-4">
               {/* Notification */}
-              <button className="relative p-2 rounded-xl hover:bg-slate-100 transition">
+              <button onClick={() => navigate("/buyer/notification")}
+              className="relative p-2 rounded-xl hover:bg-slate-100 transition">
                 <Bell className="w-5 h-5 text-slate-700" />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
               </button>

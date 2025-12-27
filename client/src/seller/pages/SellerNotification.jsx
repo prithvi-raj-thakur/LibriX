@@ -1,181 +1,195 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Bell, 
-  Package, 
-  IndianRupee, 
-  MessageCircle, 
-  Clock,
-  CheckCheck,
-  Gavel,
-  X,
-  Check
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
-import EmptyState from '@/components/common/EmptyState';
-import { NotificationSkeleton } from '@/components/common/LoadingSkeleton';
-import Navbar from './Navbar';
+import { Bell, Package, IndianRupee, Gavel, X, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
 
-const sampleNotifications = [
-  {
-    id: '1',
-    title: 'New Order Received',
-    message: 'New order for "Clean Code" from Amit Kumar.',
-    type: 'order',
-    is_read: false,
-    created_date: new Date().toISOString(),
-    order_id: '123'
-  },
-  {
-    id: '2',
-    title: 'Bid Request Match',
-    message: 'Buyer looking for "System Design Interview" (₹600 budget).',
-    type: 'bid',
-    is_read: false,
-    created_date: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '3',
-    title: 'Payment Received',
-    message: '₹380 received for "Design Patterns".',
-    type: 'subscription',
-    is_read: true,
-    created_date: new Date(Date.now() - 18000000).toISOString()
-  },
-  {
-    id: '4',
-    title: 'Bid Request Match',
-    message: 'Buyer looking for "System Design Interview" (₹600 budget).',
-    type: 'bid',
-    is_read: false,
-    created_date: new Date(Date.now() - 3600000).toISOString()
-  },
-];
+import sellerAxios from "@/api/axiosSeller";
+import { getSocket } from "@/socket";
+
+import Navbar from "./Navbar";
+import EmptyState from "@/components/common/EmptyState";
+import { NotificationSkeleton } from "@/components/common/LoadingSkeleton";
+import { toast } from "sonner";
 
 export default function SellerNotifications() {
-  const notifications = sampleNotifications;
-  const isLoading = false;
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const getIcon = (type) => {
+  // 🔒 LOCAL LOCK FOR HANDLED NOTIFICATIONS
+  const handledRef = useRef(
+  new Set(JSON.parse(localStorage.getItem("handledOrders") || "[]"))
+);
+
+
+  // ---------------- FETCH ----------------
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("sellerAccessToken");
+    if (!token) return;
+
+    try {
+      const res = await sellerAxios.get("/orders/seller/notifications", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // 🚫 DO NOT RE-OPEN HANDLED NOTIFICATIONS
+      const filtered = res.data.map(n =>
+        handledRef.current.has(n._id)
+          ? { ...n, orderStatus: "handled" }
+          : n
+      );
+
+      setNotifications(filtered);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ---------------- INITIAL LOAD ----------------
+  useEffect(() => {
+    const i = setInterval(() => {
+      if (localStorage.getItem("sellerAccessToken")) {
+        fetchNotifications();
+        clearInterval(i);
+      }
+    }, 300);
+    return () => clearInterval(i);
+  }, []);
+
+  // ---------------- SOCKET ----------------
+  useEffect(() => {
+    const socket = getSocket("seller");
+    if (!socket) return;
+
+    const onNotify = () => {
+      fetchNotifications();
+    };
+
+    socket.on("new_notification", onNotify);
+    return () => socket.off("new_notification", onNotify);
+  }, []);
+
+  // ---------------- ACCEPT / DECLINE ----------------
+  const handleAction = async (notification, action) => {
+    const token = localStorage.getItem("sellerAccessToken");
+    if (!token) return toast.error("Not authenticated");
+
+    try {
+      await sellerAxios.post(
+        "/orders/seller-action",
+        { orderId: notification.orderId, action },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success(`Order ${action}ed`);
+      handledRef.current.add(notification._id);
+
+localStorage.setItem(
+  "handledOrders",
+  JSON.stringify(Array.from(handledRef.current))
+);
+
+
+    
+
+      // 🔥 FORCE UI UPDATE
+      setNotifications(prev =>
+        prev.map(n =>
+          n._id === notification._id
+            ? { ...n, orderStatus: "handled" }
+            : n
+        )
+      );
+    } catch (err) {
+      toast.error("Action failed");
+    }
+  };
+
+  // ---------------- ICON ----------------
+  const getIcon = type => {
     const icons = {
-      order: Package,
-      subscription: IndianRupee,
-      chat: MessageCircle,
+      order_request: Package,
+      payment: IndianRupee,
+      order_update: Bell,
       bid: Gavel,
-      system: Bell
     };
     return icons[type] || Bell;
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-
+  // ---------------- UI ----------------
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 to-white">
       <Navbar />
-      <div className='pt-30' />
+      <div className="pt-30" />
+
       <div className="max-w-3xl mx-auto px-4 py-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-5xl font-bold text-slate-900">Notifications</h1>
-            <p className="text-slate-500 text-md">
-              Stay updated with your activity
-            </p>
-          </div>
+        <h1 className="text-5xl font-bold text-slate-900 mb-8">
+          Notifications
+        </h1>
 
-          {unreadCount > 0 && (
-            <Button variant="outline" size="sm">
-              <CheckCheck className="w-4 h-4 mr-2" />
-              Mark all read
-            </Button>
-          )}
-        </div>
-
-        {/* Content */}
         {isLoading ? (
-          <div className="space-y-4">
-            {[1,2,3].map(i => <NotificationSkeleton key={i} />)}
-          </div>
-        ) : notifications.length > 0 ? (
+          <NotificationSkeleton />
+        ) : notifications.length ? (
           <div className="space-y-3">
-            {notifications.map((n, index) => {
+            {notifications.map(n => {
               const Icon = getIcon(n.type);
+              const showButtons =
+                n.type === "order_request" &&
+                n.orderStatus === "pending" &&
+                !handledRef.current.has(n._id);
 
               return (
-                <motion.div
-                  key={n.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.75 }}
-                >
-                  <Card
-                    className={`group relative border transition-all ${
-                      n.is_read
-                        ? 'bg-white'
-                        : 'bg-green-50/40 border-black/20'
-                    } hover:shadow-md`}
-                  >
-                    {/* Unread dot */}
-                    {!n.is_read && (
-                      <span className="absolute left-3 top-6 h-2 w-2 rounded-full bg-red-500" />
-                    )}
-
+                <motion.div key={n._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <Card className="border bg-green-50/40 border-green-200">
                     <CardContent className="p-5 flex gap-4">
-                      {/* Icon */}
-                      <div className="mt-1">
-                        <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                          <Icon className="w-7 h-7 text-slate-600" />
-                        </div>
+                      <div className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                        <Icon className="w-6 h-6" />
                       </div>
 
-                      {/* Content */}
                       <div className="flex-1">
-                        <div className="flex justify-between items-start gap-4">
-                          <div>
-                            <h3 className="font-semibold text-xl text-slate-900">
-                              {n.title}
-                            </h3>
-                            <p className="text-md text-slate-600 mt-1">
-                              {n.message}
-                            </p>
-                          </div>
-
-                          <span className="text-xs text-slate-400 whitespace-nowrap">
-                            {formatDistanceToNow(new Date(n.created_date), {
-                              addSuffix: true
-                            })}
+                        <div className="flex justify-between">
+                          <h3 className="font-semibold text-xl">{n.title}</h3>
+                          <span className="text-xs text-slate-400">
+                            {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                           </span>
                         </div>
 
-                        {/* Actions (hover only) */}
-                        <div className="mt-3 flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                          {n.type === 'order' && !n.is_read && (
-                            <>
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                                <Check className="w-4 h-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-red-600 border-red-200 hover:bg-red-50"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Cancel
-                              </Button>
-                            </>
-                          )}
+                        <p className="text-slate-600 mt-1">{n.message}</p>
 
-                          {n.type === 'bid' && !n.is_read && (
-                            <Button size="sm" className="bg-green-400 hover:bg-green-600">
-                              <Gavel className="w-4 h-4 mr-1" />
-                              View Bid
+                        {!showButtons && (
+                          <p className="mt-3 text-sm font-medium text-green-600">
+                            Order handled
+                          </p>
+                        )}
+
+                        {showButtons && (
+                          <div className="mt-4 flex gap-3">
+                            <Button
+                              size="sm"
+                              onClick={() => handleAction(n, "accept")}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="w-4 h-4 mr-1" /> Accept
                             </Button>
-                          )}
-                        </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAction(n, "decline")}
+                              className="text-red-600 border-red-200"
+                            >
+                              <X className="w-4 h-4 mr-1" /> Cancel
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -184,11 +198,7 @@ export default function SellerNotifications() {
             })}
           </div>
         ) : (
-          <EmptyState
-            type="messages"
-            title="You're all caught up"
-            description="New notifications will appear here."
-          />
+          <EmptyState type="messages" title="No notifications yet" />
         )}
       </div>
     </div>

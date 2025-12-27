@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export const buyerProtect = (req, res, next) => {
+export const lenderProtect = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer")) {
@@ -12,16 +12,16 @@ export const buyerProtect = (req, res, next) => {
 
     const decoded = jwt.verify(
       token,
-      process.env.BUYER_ACCESS_TOKEN_SECRET
+      process.env.LENDER_ACCESS_TOKEN_SECRET
     );
 
-    if (decoded.role !== "buyer") {
+    if (decoded.role !== "lender") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    req.buyerId = decoded.id;
+    req.lenderId = decoded.id;
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ message: "Token expired or invalid" });
   }
 };

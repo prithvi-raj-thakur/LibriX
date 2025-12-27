@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import {
   generateSellerAccessToken,
   generateSellerRefreshToken,
-} from "../../utils/token.js";
+} from "../utils/token.js";
 
 /* REGISTER */
 export const registerSeller = async (req, res) => {
@@ -22,7 +22,18 @@ export const registerSeller = async (req, res) => {
   seller.refreshToken = refreshToken;
   await seller.save();
 
-  res.status(201).json({ accessToken, refreshToken });
+ res.status(200).json({
+  accessToken,
+  refreshToken,
+  user: {
+    _id: seller._id,
+    name: seller.name,
+    phone: seller.phone,
+    email: seller.email,
+    role: "seller"
+  }
+});
+
 };
 
 /* LOGIN */
@@ -41,7 +52,18 @@ export const loginSeller = async (req, res) => {
   seller.refreshToken = refreshToken;
   await seller.save();
 
-  res.json({ accessToken, refreshToken });
+ res.status(200).json({
+  accessToken,
+  refreshToken,
+  user: {
+    _id: seller._id,
+    name: seller.name,
+    phone: seller.phone,
+    email: seller.email,
+    role: "seller"
+  }
+});
+
 };
 
 /* REFRESH TOKEN */

@@ -3,27 +3,54 @@ import jwt from "jsonwebtoken";
 import {
   generateLenderAccessToken,
   generateLenderRefreshToken
-} from "../../utils/token.js";
+} from "../utils/token.js";
 
 /* REGISTER */
 export const registerLender = async (req, res) => {
-  const exists = await Lender.findOne({
-    $or: [{ phone: req.body.phone }, { email: req.body.email }]
-  });
+  try {
+    const { name, phone, email, address, password } = req.body;
 
-  if (exists)
-    return res.status(400).json({ message: "Lender already exists" });
+    // ✅ Validation (prevents Mongo crash)
+    if (!name || !phone || !email || !address || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  const lender = await Lender.create(req.body);
+    const exists = await Lender.findOne({
+      $or: [{ phone }, { email }]
+    });
 
-  const accessToken = generateLenderAccessToken(lender._id, "lender");
-  const refreshToken = generateLenderRefreshToken(lender._id, "lender");
+    if (exists) {
+      return res.status(400).json({ message: "Lender already exists" });
+    }
 
-  lender.refreshToken = refreshToken;
-  await lender.save();
+    const lender = await Lender.create({
+      name,
+      phone,
+      email,
+      address,
+      password
+    });
 
-  res.status(201).json({ accessToken, refreshToken });
+    const accessToken = generateLenderAccessToken(lender._id, "lender");
+    const refreshToken = generateLenderRefreshToken(lender._id, "lender");
+
+    lender.refreshToken = refreshToken;
+    await lender.save();
+
+    res.status(201).json({
+      accessToken,
+      refreshToken
+    });
+
+  } catch (error) {
+    console.error("❌ LENDER REGISTER ERROR:", error);
+
+    res.status(500).json({
+      message: "Internal server error"
+    });
+  }
 };
+
 
 /* LOGIN */
 export const loginLender = async (req, res) => {

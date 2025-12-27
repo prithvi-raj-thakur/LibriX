@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import {
   generateBuyerAccessToken,
   generateBuyerRefreshToken
-} from "../../utils/token.js";
+} from "../utils/token.js";
 
 /* REGISTER */
 export const registerBuyer = async (req, res) => {
@@ -22,7 +22,16 @@ export const registerBuyer = async (req, res) => {
   buyer.refreshToken = refreshToken;
   await buyer.save();
 
-  res.status(201).json({ accessToken, refreshToken });
+  res.status(201).json({
+  accessToken,
+  refreshToken,
+  user: {
+    _id: buyer._id,
+    name: buyer.name,
+    role: "buyer"
+  }
+});
+
 };
 
 /* LOGIN */
@@ -43,7 +52,16 @@ export const loginBuyer = async (req, res) => {
   buyer.refreshToken = refreshToken;
   await buyer.save();
 
-  res.json({ accessToken, refreshToken });
+  res.json({
+  accessToken,
+  refreshToken,
+  user: {
+    _id: buyer._id,
+    name: buyer.name,
+    role: "buyer"
+  }
+});
+
 };
 
 /* GET PROFILE */

@@ -1,8 +1,8 @@
 // routes/book.routes.js
 import express from "express";
 import { createBook, getMyBooks, updateBook, deleteBook, processOCR, getBooksForSale} from "../controllers/book.controller.js";
-import { sellerProtect } from "../middlewares/auth.middleware.js";
-import upload from "../../configs/multer.js"; 
+import { sellerProtect } from "../middlewares/sellerAuth.middleware.js";
+import upload from "../configs/multer.js"; 
 
 const router = express.Router();
 

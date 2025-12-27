@@ -61,6 +61,8 @@ export default function login() {
     return Object.keys(newErrors).length === 0;
   };
 
+// ... existing imports
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -79,30 +81,60 @@ export default function login() {
         }),
       });
 
+      // ✅ Parse the response body first
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
+      console.log("LOGIN RESPONSE DATA:", data);
+
       
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("user", JSON.stringify(data.user || { name: "User" }));
+      // 🔥 CLEAR OLD TOKENS
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("buyerAccessToken");
+      localStorage.removeItem("sellerAccessToken");
+      localStorage.removeItem("lenderAccessToken");
+
+      // ✅ FIX: Use 'data' variable instead of 'response.data'
+      if (userType === "buyer") {
+        localStorage.setItem("buyerAccessToken", data.accessToken);
+      } else if (userType === "seller") {
+        localStorage.setItem("sellerAccessToken", data.accessToken);
+      } else if (userType === "lender") {
+        localStorage.setItem("lenderAccessToken", data.accessToken);
+      }
+
+      // ✅ FIX: Store user object and type correctly
       localStorage.setItem("userType", userType);
 
-      setSubmitStatus('success');
-      
+
+if (userType === "buyer") {
+  localStorage.setItem("user", JSON.stringify(data.user));
+}
+
+if (userType === "seller") {
+    if (!data.user) {
+    console.error("Seller login response missing user", data);
+    throw new Error("Login failed: seller profile not received");
+  }
+
+  localStorage.setItem("sellerUser", JSON.stringify(data.user));
+}
+
+if (userType === "lender") {
+  localStorage.setItem("lenderUser", JSON.stringify(data.user));
+}
+
+
+      setSubmitStatus("success");
+
       setTimeout(() => {
         setSubmitStatus(null);
-        // --- UPDATED NAVIGATION LOGIC ---
-        if (userType === 'seller') {
-          navigate("/seller/dashboard"); 
-        } else if (userType === 'buyer') {
-          navigate("/buyer/home"); // Navigates buyer to home
-        } else if (userType === 'lender') {
-          navigate("/lender/dashboard"); // Navigates lender if applicable
-        } else {
-          navigate("/"); 
-        }
+        if (userType === "seller") navigate("/seller/dashboard");
+        else if (userType === "buyer") navigate("/buyer/home");
+        else if (userType === "lender") navigate("/lender/dashboard");
+        else navigate("/");
       }, 1500);
 
     } catch (error) {
@@ -112,6 +144,8 @@ export default function login() {
       setIsSubmitting(false);
     }
   };
+
+// ... rest of file (UI remains exactly as you had it)
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
