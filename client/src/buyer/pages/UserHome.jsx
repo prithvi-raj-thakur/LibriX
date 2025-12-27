@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea"; 
 import EmptyState from '@/components/common/EmptyState';
 import { BookCardSkeleton } from '@/components/common/LoadingSkeleton';
 import buyerAxios from '@/api/axiosBuyer';
@@ -15,7 +16,8 @@ import {
   Gavel,
   ShoppingCart,
   SlidersHorizontal,
-  BookOpen
+  BookOpen,
+  Send
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -30,11 +32,15 @@ export default function BuyerHome() {
   const [activeTab, setActiveTab] = useState('buying');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
+  // States for Bidding Form
+  const [bidBookName, setBidBookName] = useState('');
+  const [bidComment, setBidComment] = useState('');
+
   const [saleBooks, setSaleBooks] = useState([]);
   const [rentBooks, setRentBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ------------------ FETCH SALE BOOKS (UNCHANGED) ------------------
+  // ------------------ FETCH SALE BOOKS ------------------
   useEffect(() => {
     if (activeTab !== 'buying') return;
 
@@ -53,14 +59,13 @@ export default function BuyerHome() {
     fetchSaleBooks();
   }, [activeTab]);
 
-  // ------------------ FETCH RENT BOOKS (UPDATED) ------------------
+  // ------------------ FETCH RENT BOOKS ------------------
   useEffect(() => {
     if (activeTab !== 'lending') return;
 
     const fetchRentBooks = async () => {
       try {
         setIsLoading(true);
-        // Fixed URL to match server.js mounting point: /api/lend-books
         const response = await buyerAxios.get('http://localhost:3000/api/lend-books');
         if (response.data.success) {
           setRentBooks(response.data.books);
@@ -92,7 +97,6 @@ export default function BuyerHome() {
     return matchesSearch && matchesCategory;
   });
 
-  // ------------------ BUY NOW LOGIC (UNCHANGED) ------------------
   const handleBuyNow = async (bookId) => {
     try {
       const token = localStorage.getItem("buyerAccessToken");
@@ -115,12 +119,35 @@ export default function BuyerHome() {
     }
   };
 
+  // ------------------ BID FORM SUBMISSION ------------------
+  const handleBidSubmit = async (e) => {
+    e.preventDefault();
+    if(!bidBookName || !bidComment) {
+        toast.error("Please fill in both fields");
+        return;
+    }
+
+    try {
+      const response = await buyerAxios.post('http://localhost:3000/api/bids/post-request', {
+        bookName: bidBookName,
+        comment: bidComment
+      });
+
+      if (response.data.success) {
+        toast.success("Bidding request sent!");
+        setBidBookName('');
+        setBidComment('');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to post bid");
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 md:pb-2">
       <Navbar />
 
-      {/* HERO SECTION */}
       <div className='pt-25'/>
       <div className="bg-slate-50 pt-14 pb-8">
         <motion.div
@@ -152,7 +179,6 @@ export default function BuyerHome() {
         </motion.div>
       </div>
 
-      {/* TABS */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="flex w-full max-w-lg mx-auto rounded-full bg-white p-1 shadow-md h-14">
           <TabsTrigger value="lending" className="relative flex-1 rounded-full text-sm font-semibold text-slate-700 data-[state=active]:text-white">
@@ -222,74 +248,116 @@ export default function BuyerHome() {
         </div>
       )}
 
-      {/* BOOK GRID */}
-      <motion.div className="flex flex-wrap justify-center gap-6">
-        {isLoading
-          ? Array(6).fill(0).map((_, i) => <BookCardSkeleton key={i} />)
-          : filteredBooks.length > 0
-          ? filteredBooks.map(book => {
-              const isBuyTab = activeTab === "buying";
-              return (
-                <motion.div
-                  key={book._id || book.id}
-                  className="flex justify-center"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="bg-white rounded-2xl shadow-lg p-4 w-64 flex flex-col items-center text-center hover:scale-105 transition-transform">
-                    {/* FIXED: Uses cover_image for rental books */}
-                    <img
-                      src={isBuyTab ? book.coverImage : book.cover_image}
-                      alt={book.title}
-                      className="w-32 h-44 object-cover rounded-lg mb-4"
-                    />
-                    <h3 className="text-lg font-semibold">{book.title}</h3>
-                    <p className="text-sm text-slate-500 mb-1">{book.author}</p>
-                    <p className="text-xs text-slate-400 mb-2">
-                      {isBuyTab 
-                        ? `Shop: ${book.seller?.shopName || "BookBazaar"}`
-                        : `Lender: ${book.lenderId?.name || "Private Lender"}`
-                      }
-                    </p>
+      {/* BIDDING SECTION OR BOOK GRID */}
+      <div className="flex flex-col items-center justify-center w-full px-4">
+        {activeTab === "bidding" ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-lg bg-white p-8 rounded-3xl shadow-xl border border-slate-100"
+          >
+            <div className="text-center mb-6">
+              <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Gavel className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800">Post a Bid</h2>
+              <p className="text-slate-500 text-sm">Tell sellers what book you are looking for</p>
+            </div>
 
-                    {isBuyTab ? (
-                      <p className="text-sm font-bold mb-2 text-green-600">
-                        Buy: ₹{book.price}
-                      </p>
-                    ) : (
-                      // FIXED: Uses rent_price_per_week for rental books
-                      <p className="text-sm font-bold mb-2 text-slate-700">
-                        Rent: ₹{book.rent_price_per_week}/week
-                      </p>
-                    )}
-
-                    {isBuyTab && (
-                      <Button
-                        onClick={() => handleBuyNow(book._id)}
-                        className="w-full mt-2 bg-green-400 hover:bg-yellow-400 text-black font-semibold rounded-lg"
-                      >
-                        Buy Now
-                      </Button>
-                    )}
-
-                   
-
-                    <Button
-                      onClick={() =>
-                        navigate(`/buyer/lendBook-details/${book._id || book.id}`, { state: { book, mode: activeTab } })
-                      }
-                      className="w-full mt-2 bg-green-200 hover:bg-yellow-200 text-black font-semibold rounded-lg"
+            <form onSubmit={handleBidSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-700 ml-1">Book Name</label>
+                <Input 
+                  placeholder="e.g. Cracking the Coding Interview" 
+                  value={bidBookName}
+                  onChange={(e) => setBidBookName(e.target.value)}
+                  className="mt-1 rounded-xl h-12 focus:ring-green-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-700 ml-1">Comment</label>
+                <textarea 
+                  placeholder="e.g. I need the 2015 edition" 
+                  value={bidComment}
+                  onChange={(e) => setBidComment(e.target.value)}
+                  className="mt-1 w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent min-h-[100px]"
+                />
+              </div>
+              <Button 
+                type="submit"
+                className="w-full h-12 bg-green-400 hover:bg-yellow-400 text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Enter
+              </Button>
+            </form>
+          </motion.div>
+        ) : (
+          <motion.div className="flex flex-wrap justify-center gap-6 w-full">
+            {isLoading
+              ? Array(6).fill(0).map((_, i) => <BookCardSkeleton key={i} />)
+              : filteredBooks.length > 0
+              ? filteredBooks.map(book => {
+                  const isBuyTab = activeTab === "buying";
+                  return (
+                    <motion.div
+                      key={book._id || book.id}
+                      className="flex justify-center"
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
                     >
-                      View More
-                    </Button>
-                  </div>
-                </motion.div>
-              );
-            })
-          : <EmptyState />}
-      </motion.div>
+                      <div className="bg-white rounded-2xl shadow-lg p-4 w-64 flex flex-col items-center text-center hover:scale-105 transition-transform">
+                        <img
+                          src={isBuyTab ? book.coverImage : book.cover_image}
+                          alt={book.title}
+                          className="w-32 h-44 object-cover rounded-lg mb-4"
+                        />
+                        <h3 className="text-lg font-semibold">{book.title}</h3>
+                        <p className="text-sm text-slate-500 mb-1">{book.author}</p>
+                        <p className="text-xs text-slate-400 mb-2">
+                          {isBuyTab 
+                            ? `Shop: ${book.seller?.shopName || "BookBazaar"}`
+                            : `Lender: ${book.lenderId?.name || "Private Lender"}`
+                          }
+                        </p>
+
+                        {isBuyTab ? (
+                          <p className="text-sm font-bold mb-2 text-green-600">
+                            Buy: ₹{book.price}
+                          </p>
+                        ) : (
+                          <p className="text-sm font-bold mb-2 text-slate-700">
+                            Rent: ₹{book.rent_price_per_week}/week
+                          </p>
+                        )}
+
+                        {isBuyTab && (
+                          <Button
+                            onClick={() => handleBuyNow(book._id)}
+                            className="w-full mt-2 bg-green-400 hover:bg-yellow-400 text-black font-semibold rounded-lg"
+                          >
+                            Buy Now
+                          </Button>
+                        )}
+
+                        <Button
+                          onClick={() =>
+                            navigate(`/buyer/lendBook-details/${book._id || book.id}`, { state: { book, mode: activeTab } })
+                          }
+                          className="w-full mt-2 bg-green-200 hover:bg-yellow-200 text-black font-semibold rounded-lg"
+                        >
+                          View More
+                        </Button>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              : <EmptyState />}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

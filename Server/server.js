@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 
 
 import connectDB from "./configs/db.js";
-import connectCloudinary from "./configs/cloudinaryConfig.js";
+import {connectCloudinary} from "./configs/cloudinaryConfig.js";
 
 import sellerAuthRouter from "./routes/sellerAuth.route.js";
 import buyerAuthRouter from "./routes/buyerAuth.route.js";
@@ -17,6 +17,7 @@ import ocrRouter from "./routes/ocr.route.js";
 import bookRouter from "./routes/book.route.js";
 import orderRouter from "./routes/order.route.js";
 import rentOrderRouter from "./routes/rentOrder.route.js";
+import bidsRouter from "./routes/bid.route.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -41,6 +42,7 @@ app.use("/api/books", bookRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/lend-books", lendBookRouter);
 app.use("/api/rent-orders", rentOrderRouter);
+app.use("/api/bids",bidsRouter)
 
 app.get("/", (req, res) => {
   res.send("Welcome to the LibriX Server!");

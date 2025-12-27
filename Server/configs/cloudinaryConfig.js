@@ -9,4 +9,5 @@ const connectCloudinary = () => {
     });
 };
 
-export default connectCloudinary;
+// ✅ FIX: Export both the function AND the cloudinary instance
+export { connectCloudinary, cloudinary };

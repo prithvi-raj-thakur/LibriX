@@ -12,6 +12,7 @@ const notificationSchema = new mongoose.Schema({
     enum: ["buyer", "seller", "lender"], 
     required: true 
   },
+  imageUrl: { type: String },
   title: { type: String, required: true },
   message: { type: String, required: true },
   orderId: { 

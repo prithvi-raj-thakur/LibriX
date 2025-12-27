@@ -41,7 +41,7 @@ export default function Navbar() {
 
   const links = [
     { id: "home", label: "Home", href: "/seller/dashboard", icon: <Home /> },
-    { id: "bidding", label: "Reverse Bidding", href: "/seller/bidding", icon: <Gavel /> },
+    { id: "bidding", label: "Reverse Bidding", href: "/seller/bids", icon: <Gavel /> },
     { id: "orders", label: "My Orders", href: "/seller/orders", icon: <Package /> },
     { id: "books", label: "Books", href: "/seller/uploads", icon: <BookOpen /> },
   ];

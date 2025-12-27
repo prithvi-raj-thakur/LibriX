@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,276 +19,183 @@ import {
 } from "@/components/ui/select";
 import { 
   Gavel, 
-  IndianRupee, 
   Clock, 
   User,
   Send,
   MessageCircle,
-  Check
+  Check,
+  Upload
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import EmptyState from '@/components/common/EmptyState';
 import Navbar from './Navbar';
-
-// ✅ Dummy bid requests data
-const sampleBidRequests = [
-  {
-    id: '1',
-    book_title: 'System Design Interview',
-    author: 'Alex Xu',
-    buyer_name: 'Amit Kumar',
-    max_budget: 600,
-    description: 'Looking for the second edition in good condition',
-    status: 'open',
-    expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    created_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    my_offer: null
-  },
-  {
-    id: '2',
-    book_title: 'Cracking the Coding Interview',
-    author: 'Gayle Laakmann McDowell',
-    buyer_name: 'Priya Sharma',
-    max_budget: 500,
-    description: 'Need this for upcoming interviews. Any edition works.',
-    status: 'offers_received',
-    expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    created_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    my_offer: { price: 450, condition: 'good', status: 'pending' }
-  },
-  {
-    id: '3',
-    book_title: 'Clean Architecture',
-    author: 'Robert C. Martin',
-    buyer_name: 'Rahul Verma',
-    max_budget: 550,
-    description: 'Prefer hardcover but paperback also fine',
-    status: 'open',
-    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    created_date: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    my_offer: null
-  }
-];
+import { toast } from 'sonner';
 
 export default function SellerBids() {
+  const [bidRequests, setBidRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [offerDialog, setOfferDialog] = useState(false);
+  
   const [offerData, setOfferData] = useState({
     price: '',
     condition: '',
-    message: ''
+    message: '',
+    image: null
   });
 
-  // ✅ Using dummy data directly
-  const bidRequests = sampleBidRequests;
-  const isLoading = false;
+  const [imagePreview, setImagePreview] = useState(null);
 
-  const handleSubmitOffer = () => {
-    console.log('Submitting offer:', offerData);
-    setOfferDialog(false);
-    setOfferData({ price: '', condition: '', message: '' });
-  };
-
-  const getStatusBadge = (status, myOffer) => {
-    if (myOffer) {
-      if (myOffer.status === 'accepted') {
-        return <Badge className="bg-green-100 text-green-700">Offer Accepted</Badge>;
+  // 1. FETCH ALL OPEN BIDS
+  useEffect(() => {
+    const fetchBids = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/bids/all');
+        if (response.data.success) {
+          setBidRequests(response.data.bids);
+        }
+      } catch (error) {
+        console.error("Error fetching bids:", error);
+        toast.error("Failed to load bid requests");
+      } finally {
+        setIsLoading(false);
       }
-      return <Badge className="bg-indigo-100 text-indigo-700">Offer Sent</Badge>;
+    };
+    fetchBids();
+  }, []);
+
+  // 2. HANDLE IMAGE SELECTION
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setOfferData({ ...offerData, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-
-    const styles = {
-      open: 'bg-blue-100 text-blue-700',
-      offers_received: 'bg-amber-100 text-amber-700',
-      accepted: 'bg-green-100 text-green-700',
-      closed: 'bg-slate-100 text-slate-700'
-    };
-
-    const labels = {
-      open: 'Open',
-      offers_received: 'Has Offers',
-      accepted: 'Accepted',
-      closed: 'Closed'
-    };
-
-    return <Badge className={styles[status]}>{labels[status]}</Badge>;
   };
+
+  // 3. SUBMIT OFFER TO BACKEND
+  const handleSubmitOffer = async () => {
+    try {
+      const token = localStorage.getItem("sellerAccessToken");
+      if (!token) {
+        toast.error("Please log in as a seller to submit offers");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('bidId', selectedRequest._id);
+      formData.append('buyerId', selectedRequest.buyer._id); // Needed for notification
+      formData.append('bookName', selectedRequest.bookName); // Needed for notification title
+      formData.append('price', offerData.price);
+      formData.append('condition', offerData.condition);
+      formData.append('message', offerData.message);
+      
+      if (offerData.image) {
+        formData.append('image', offerData.image); // Matches upload.single("image") in route
+      }
+
+      const response = await axios.post(
+        'http://localhost:3000/api/bids/create-offer',
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data' // Required for files
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Offer sent to buyer! Notification sent.");
+        setOfferDialog(false);
+        resetForm();
+      }
+    } catch (error) {
+      console.error("Submit Offer Error:", error);
+      toast.error(error.response?.data?.message || "Failed to send offer");
+    }
+  };
+
+  const resetForm = () => {
+    setOfferData({ price: '', condition: '', message: '', image: null });
+    setImagePreview(null);
+  };
+
+  if (isLoading) return <div className="text-center mt-20">Loading bid requests...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 md:pb-8">
-      {/* Header */}
       <Navbar />
 
-      {/* HERO */}
       <div className='md:pt-30' />
-      <div className="bg-gradient-to-br rounded-[2.5rem] md:w-[80%] mx-auto from-yellow-400 to-green-300 text-black pt-[30px] w-full">
-  <div className="mx-auto w-[75%] max-w-[1100px] px-4 py-12">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.5 }}
-      className="text-center"
-    >
-      <div className="flex items-center justify-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-          <Gavel className="w-6 h-6" />
+      <div className="bg-gradient-to-br rounded-[2.5rem] md:w-[80%] mx-auto from-yellow-400 to-green-300 text-black pt-[30px] w-full shadow-lg">
+        <div className="mx-auto w-[75%] max-w-[1100px] px-4 py-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Gavel className="w-6 h-6" />
+              </div>
+              <h1 className="text-4xl md:text-4xl font-bold">Bid Requests</h1>
+            </div>
+            <p className="text-black/70 font-medium">Buyers are looking for these books. Submit your offer to win the sale!</p>
+          </motion.div>
         </div>
-        <h1 className="text-4xl md:text-4xl font-bold">
-          Bid Requests
-        </h1>
       </div>
 
-      <p className="text-black/70">
-        Buyers are looking for these books. Submit your offer to win the sale!
-      </p>
-    </motion.div>
-  </div>
-</div>
-
-
-
-
-      {/* MAIN CONTENT — 80% */}
       <div className="mx-auto w-[80%] px-4 py-10">
-
-        {/* STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 place-items-center">
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.5, delay: 0 }}
-            className="w-full"
-          >
-            <Card className="border-0 shadow-md w-full h-[140px] flex items-center justify-center">
-              <CardContent className="text-center">
-                <div className="text-7xl font-bold">
-                  {bidRequests.length}
-                </div>
-                <div className="text-sm text-slate-500 mt-1">
-                  Open Requests
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="w-full"
-          >
-            <Card className="border-0 shadow-sm w-full h-[140px] flex items-center justify-center">
-              <CardContent className="text-center">
-                <div className="text-7xl font-bold">
-                  {bidRequests.filter(r => r.my_offer).length}
-                </div>
-                <div className="text-sm text-slate-500 mt-1">
-                  My Offers
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="w-full"
-          >
-            <Card className="border-0 shadow-sm w-full h-[140px] flex items-center justify-center">
-              <CardContent className="text-center">
-                <div className="text-7xl font-bold">
-                  2
-                </div>
-                <div className="text-sm text-slate-500 mt-1">
-                  Won Bids
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
+          <Card className="border-0 shadow-md w-full h-[140px] flex items-center justify-center">
+            <CardContent className="text-center">
+              <div className="text-7xl font-bold">{bidRequests.length}</div>
+              <div className="text-sm text-slate-500 mt-1">Open Requests</div>
+            </CardContent>
+          </Card>
         </div>
 
-
-        {/* BID LIST */}
         <div className="space-y-6">
           {bidRequests.map((request, index) => (
             <motion.div
-              key={request.id}
-              initial={{
-                opacity: 0,
-                x: index % 2 === 0 ? -80 : 80
-              }}
+              key={request._id}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -80 : 80 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 2, delay: index * 0.15 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
             >
-              <Card className="border-0 shadow-md hover:shadow-lg">
+              <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs text-slate-400">
-                          {formatDistanceToNow(
-                            new Date(request.created_date),
-                            { addSuffix: true }
-                          )}
+                          <Clock className="w-3 h-3 inline mr-1" />
+                          {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}
                         </span>
                       </div>
-
-                      <h3 className="text-2xl font-semibold">
-                        {request.book_title}
-                      </h3>
-                      <p className="text-sm text-slate-500">
-                        by {request.author}
-                      </p>
-
-                      <p className="text-sm text-slate-600 mt-2">
-                        "{request.description}"
-                      </p>
-
+                      <h3 className="text-2xl font-semibold text-slate-800">{request.bookName}</h3>
+                      <p className="text-sm text-slate-600 mt-2 italic">"{request.comment}"</p>
                       <div className="flex gap-4 text-sm mt-3 text-slate-500">
                         <span className="flex items-center gap-1">
-                          <User className="w-4 h-4" /> {request.buyer_name}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          Expires {format(
-                            new Date(request.expires_at),
-                            "MMM d"
-                          )}
+                          <User className="w-4 h-4" /> 
+                          {request.buyer?.name || "Interested Buyer"}
                         </span>
                       </div>
                     </div>
-
-                    <div className="text-right space-y-3">
-                      <div>
-                        <div className="text-sm text-slate-500">
-                          Max Budget
-                        </div>
-                        <div className="text-2xl font-bold text-green-500 flex items-center justify-end">
-                          <IndianRupee className="w-5 h-5" />
-                          {request.max_budget}
-                        </div>
-                      </div>
-
-                      {!request.my_offer && (
-                        <Button
-                          className="bg-green-500 hover:bg-green-400 hover:text-black mr-5"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setOfferDialog(true);
-                          }}
-                        >
-                          <Send className="w-4 h-4 mr-2" />
-                          Submit Offer
-                        </Button>
-                      )}
-
-                      <Button variant="outline" size="sm" >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Chat with Buyer
+                    <div className="flex flex-col justify-center items-end gap-3">
+                      <Button
+                        className="bg-green-500 hover:bg-green-400 text-white w-full md:w-auto font-bold px-6"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setOfferDialog(true);
+                        }}
+                      >
+                        <Send className="w-4 h-4 mr-2" /> Submit Offer
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full md:w-auto border-slate-200">
+                        <MessageCircle className="w-4 h-4 mr-2" /> Chat with Buyer
                       </Button>
                     </div>
                   </div>
@@ -295,66 +203,96 @@ export default function SellerBids() {
               </Card>
             </motion.div>
           ))}
-
-          {bidRequests.length === 0 && (
-            <EmptyState
-              type="search"
-              title="No bid requests"
-              description="Check back later for new book requests."
-            />
-          )}
+          {bidRequests.length === 0 && <EmptyState type="search" title="No bid requests" description="Check back later." />}
         </div>
       </div>
 
-      {/* OFFER DIALOG */}
-      <Dialog open={offerDialog} onOpenChange={setOfferDialog}>
-        <DialogContent>
+      {/* OFFER POPUP DIALOG */}
+      <Dialog open={offerDialog} onOpenChange={(open) => { setOfferDialog(open); if(!open) resetForm(); }}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Submit Your Offer</DialogTitle>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Send className="w-5 h-5 text-green-500" />
+              Submit Your Offer
+            </DialogTitle>
           </DialogHeader>
 
           {selectedRequest && (
-            <div className="space-y-4">
-              <Input
-                placeholder="Your price"
-                type="number"
-                value={offerData.price}
-                onChange={(e) =>
-                  setOfferData({ ...offerData, price: e.target.value })
-                }
-              />
+            <div className="space-y-4 pt-4">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Book Name</p>
+                <p className="text-sm font-semibold text-slate-800">{selectedRequest.bookName}</p>
+              </div>
 
-              <Select
-                value={offerData.condition}
-                onValueChange={(v) =>
-                  setOfferData({ ...offerData, condition: v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Book Photo</label>
+                <div className="relative group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="book-image-upload"
+                  />
+                  <label
+                    htmlFor="book-image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-green-400 hover:bg-green-50/30 transition-all overflow-hidden"
+                  >
+                    {imagePreview ? (
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-slate-400">
+                        <Upload className="w-6 h-6" />
+                        <span className="text-xs">Upload book condition image</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
 
-              <Input
-                placeholder="Message (optional)"
-                value={offerData.message}
-                onChange={(e) =>
-                  setOfferData({ ...offerData, message: e.target.value })
-                }
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">Price (₹)</label>
+                  <Input
+                    placeholder="500"
+                    type="number"
+                    value={offerData.price}
+                    onChange={(e) => setOfferData({ ...offerData, price: e.target.value })}
+                    className="rounded-lg h-10 focus:ring-green-400"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">Condition</label>
+                  <Select value={offerData.condition} onValueChange={(v) => setOfferData({ ...offerData, condition: v })}>
+                    <SelectTrigger className="rounded-lg h-10 focus:ring-green-400">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">Like New</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Acceptable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Comments</label>
+                <textarea
+                  placeholder="Tell the buyer about the book..."
+                  value={offerData.message}
+                  onChange={(e) => setOfferData({ ...offerData, message: e.target.value })}
+                  className="w-full p-3 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-400 min-h-[80px]"
+                />
+              </div>
 
               <Button
-                className="w-full bg-amber-500"
-                disabled={!offerData.price || !offerData.condition}
+                className="w-full bg-green-500 hover:bg-green-600 text-white h-11 rounded-lg font-bold transition-all shadow-md active:scale-95"
+                disabled={!offerData.price || !offerData.condition || !offerData.image}
                 onClick={handleSubmitOffer}
               >
                 <Check className="w-4 h-4 mr-2" />
-                Submit Offer
+                Submit My Offer
               </Button>
             </div>
           )}
